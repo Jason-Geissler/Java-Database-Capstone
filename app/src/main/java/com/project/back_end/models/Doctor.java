@@ -1,4 +1,4 @@
-package com.smartclinic.model;
+package com.project.back_end.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
