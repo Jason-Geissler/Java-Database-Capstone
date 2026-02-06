@@ -9,30 +9,35 @@ import org.springframework.web.bind.annotation.PathVariable;
 @Controller
 public class DashboardController {
 
-    private final SharedService sharedService;
+    private final TokenService tokenService;
 
     @Autowired
-    public DashboardController(SharedService sharedService) {
-        this.sharedService = sharedService;
+    public DashboardController(TokenService tokenService) {
+        this.tokenService = tokenService;
     }
 
+    /**
+     * Handles the admin dashboard view.
+     * Validates the token for the "admin" role.
+     */
     @GetMapping("/adminDashboard/{token}")
-    public String adminDashboard(@PathVariable("token") String token) {
-        boolean valid = sharedService.validateToken(token, "admin");
-        if (valid) {
-            return "admin/adminDashboard"; // forwards to Thymeleaf or JSP view
-        } else {
-            return "redirect:/"; // redirect to login/home if invalid
+    public String adminDashboard(@PathVariable String token) {
+        if (tokenService.validateToken(token, "admin")) {
+            return "admin/adminDashboard";  // returns the admin dashboard view
         }
+        return "redirect:/"; // redirect to home/login if invalid
     }
 
+    /**
+     * Handles the doctor dashboard view.
+     * Validates the token for the "doctor" role.
+     */
     @GetMapping("/doctorDashboard/{token}")
-    public String doctorDashboard(@PathVariable("token") String token) {
-        boolean valid = sharedService.validateToken(token, "doctor");
-        if (valid) {
-            return "doctor/doctorDashboard"; // forwards to doctor view
-        } else {
-            return "redirect:/";
+    public String doctorDashboard(@PathVariable String token) {
+        if (tokenService.validateToken(token, "doctor")) {
+            return "doctor/doctorDashboard";  // returns the doctor dashboard view
         }
+        return "redirect:/"; // redirect to home/login if invalid
     }
 }
+
