@@ -1,4 +1,4 @@
-package com.smartclinic.model;
+package com.project.back_end.models;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
