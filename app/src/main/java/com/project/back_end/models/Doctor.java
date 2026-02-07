@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +22,14 @@ public class Doctor {
     @NotBlank(message = "Specialty is required")
     private String specialty;
 
+    /**
+     * List of available time slots for this doctor (e.g., 09:00, 10:00, etc.)
+     */
+    @ElementCollection
+    @CollectionTable(name = "doctor_available_times", joinColumns = @JoinColumn(name = "doctor_id"))
+    @Column(name = "available_time")
+    private List<LocalTime> availableTimes = new ArrayList<>();
+
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Appointment> appointments = new ArrayList<>();
 
@@ -34,28 +43,36 @@ public class Doctor {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getSpecialty() {
         return specialty;
     }
 
-    public void setSpecialty(String specialty) {
-        this.specialty = specialty;
+    public List<LocalTime> getAvailableTimes() {
+        return availableTimes;
     }
 
     public List<Appointment> getAppointments() {
         return appointments;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setSpecialty(String specialty) {
+        this.specialty = specialty;
+    }
+
+    public void setAvailableTimes(List<LocalTime> availableTimes) {
+        this.availableTimes = availableTimes;
     }
 
     public void setAppointments(List<Appointment> appointments) {
