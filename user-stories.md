@@ -52,4 +52,20 @@ Email must be unique during registration.
 Appointments should not overlap for the same doctor.
 Only authenticated users can book or view appointments.
 
+Title:
+As an admin, I want to securely manage doctors and system access, so that I can maintain platform security and monitor usage.
 
+Acceptance Criteria:
+
+Admin can log in using a valid username and password and access the admin dashboard.
+Admin can log out of the system and is prevented from accessing protected pages afterward.
+Admin can add new doctors and delete existing doctor profiles.
+Admin can run a stored MySQL procedure to view the number of appointments per month.
+Priority: High
+Story Points: 8
+
+Notes:
+
+Invalid login attempts should return an error message.
+Deleting a doctor should not remove historical appointment data.
+Stored procedure output should be clearly displayed or logged for reporting purposes.
