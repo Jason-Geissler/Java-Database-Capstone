@@ -37,8 +37,8 @@ public class TokenService {
 
     @PostConstruct
     private void init() {
-        // Initialize signing key once after bean construction
-        signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        // Initialize signing key once after bean construction using the secret
+        this.signingKey = getSigningKey();
     }
 
     /** Generate JWT token for a user identifier (email or username) */
@@ -50,7 +50,7 @@ public class TokenService {
                 .setSubject(identifier)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(signingKey, SignatureAlgorithm.HS256)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -58,7 +58,7 @@ public class TokenService {
     public String extractIdentifier(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(signingKey)
+                    .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
@@ -89,8 +89,8 @@ public class TokenService {
         }
     }
 
-    /** Retrieve the signing key used for JWT */
-    public SecretKey getSigningKey() {
-        return signingKey;
+    /** Derives the signing key from the configured JWT secret */
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 }
