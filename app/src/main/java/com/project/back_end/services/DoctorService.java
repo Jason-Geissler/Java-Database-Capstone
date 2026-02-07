@@ -5,10 +5,13 @@ import com.project.back_end.models.Doctor;
 import com.project.back_end.repo.AppointmentRepository;
 import com.project.back_end.repo.DoctorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,13 +67,21 @@ public class DoctorService {
         return 1;
     }
 
-    /** Validate doctor's login */
-    public String validateDoctor(String email, String password) {
+    /** Validate doctor's login — returns token or error message */
+    public ResponseEntity<?> validateDoctor(String email, String password) {
         Doctor doctor = doctorRepository.findByEmail(email);
-        if (doctor == null) return "Doctor not found";
-        if (!doctor.getPassword().equals(password)) return "Invalid password";
+        if (doctor == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Doctor not found");
+        }
 
-        return tokenService.generateToken(doctor.getId());
+        if (!doctor.getPassword().equals(password)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid password");
+        }
+
+        String token = tokenService.generateToken(doctor.getId());
+        return ResponseEntity.ok(token);
     }
 
     /** Get all doctors */
@@ -85,7 +96,7 @@ public class DoctorService {
         return doctorRepository.findByNameContainingIgnoreCaseAndSpecialtyIgnoreCase(name, "");
     }
 
-    /** Get available slots for a doctor on a given date */
+    /** Get available slots for a doctor on a specific date */
     @Transactional
     public List<LocalTime> getDoctorAvailability(Long doctorId, LocalDate date) {
         List<LocalTime> allSlots = new ArrayList<>();
@@ -93,12 +104,14 @@ public class DoctorService {
             allSlots.add(LocalTime.of(hour, 0));
         }
 
-        List<Appointment> appointments = appointmentRepository.findByDoctorIdAndAppointmentTimeBetween(
-                doctorId, date.atStartOfDay(), date.atTime(23, 59)
-        );
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(23, 59, 59);
 
-        for (Appointment a : appointments) {
-            allSlots.remove(a.getAppointmentTime().toLocalTime());
+        List<Appointment> appointments = appointmentRepository
+                .findByDoctorIdAndAppointmentTimeBetween(doctorId, startOfDay, endOfDay);
+
+        for (Appointment appointment : appointments) {
+            allSlots.remove(appointment.getAppointmentTime().toLocalTime());
         }
 
         return allSlots;
